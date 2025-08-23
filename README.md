@@ -62,6 +62,13 @@ echo "Test" | ./ts "%.s"
 
 echo "Test" | ./ts "%.T"
 # Output: 22:19:59.020945 Test (time with microsecond precision)
+
+# Nanosecond precision (compatible with date command)
+echo "Test" | ./ts "%s.%N"
+# Output: 1755921322.799541000 Test (unix timestamp with nanosecond precision)
+
+echo "Test" | ./ts "%T.%N"
+# Output: 22:55:17.107087000 Test (time with nanosecond precision)
 ```
 
 ### Incremental timestamps (since start)

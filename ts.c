@@ -227,6 +227,7 @@ void print_usage(const char *program_name) {
     fprintf(stderr, "  -h    Show this help message\n");
     fprintf(stderr, "\nFormat is a strftime format string. Default: \"%%b %%d %%H:%%M:%%S\"\n");
     fprintf(stderr, "Special extensions: %%.S (seconds with subsecond), %%.s (unix timestamp with subsecond), %%.T (time with subsecond)\n");
+    fprintf(stderr, "Nanosecond support: %%N (nanoseconds, compatible with date command)\n");
 }
 
 high_res_time_t get_high_res_time(int monotonic_mode) {
@@ -245,23 +246,56 @@ high_res_time_t get_high_res_time(int monotonic_mode) {
 }
 
 void format_timestamp_with_subsecond(char *buffer, size_t buffer_size, const char *format, high_res_time_t timestamp) {
+    (void)buffer_size; // Suppress unused parameter warning
     char temp_buffer[MAX_FORMAT_LENGTH];
     struct tm *tm_info = localtime(&timestamp.seconds);
     
-    // Check for special subsecond extensions
-    if (strstr(format, "%.S") != NULL) {
-        // %.S - seconds with subsecond resolution (just the seconds part)
-        snprintf(buffer, buffer_size, "%02d.%06ld", tm_info->tm_sec, timestamp.nanoseconds / 1000);
-    } else if (strstr(format, "%.s") != NULL) {
-        // %.s - unix timestamp with subsecond resolution
-        snprintf(buffer, buffer_size, "%ld.%06ld", timestamp.seconds, timestamp.nanoseconds / 1000);
-    } else if (strstr(format, "%.T") != NULL) {
-        // %.T - time with subsecond resolution
-        strftime(temp_buffer, sizeof(temp_buffer), "%H:%M:%S", tm_info);
-        snprintf(buffer, buffer_size, "%s.%06ld", temp_buffer, timestamp.nanoseconds / 1000);
+    // First pass: handle special patterns and build the result
+    char result[MAX_FORMAT_LENGTH] = "";
+    const char *current = format;
+    
+    while (*current != '\0') {
+        if (strncmp(current, "%.S", 3) == 0) {
+            // %.S - seconds with subsecond resolution
+            snprintf(result + strlen(result), sizeof(result) - strlen(result), 
+                    "%02d.%06ld", tm_info->tm_sec, timestamp.nanoseconds / 1000);
+            current += 3;
+        } else if (strncmp(current, "%.s", 3) == 0) {
+            // %.s - unix timestamp with subsecond resolution
+            snprintf(result + strlen(result), sizeof(result) - strlen(result), 
+                    "%ld.%06ld", timestamp.seconds, timestamp.nanoseconds / 1000);
+            current += 3;
+        } else if (strncmp(current, "%.T", 3) == 0) {
+            // %.T - time with subsecond resolution
+            char time_str[32];
+            strftime(time_str, sizeof(time_str), "%H:%M:%S", tm_info);
+            snprintf(result + strlen(result), sizeof(result) - strlen(result), 
+                    "%s.%06ld", time_str, timestamp.nanoseconds / 1000);
+            current += 3;
+        } else if (strncmp(current, "%N", 2) == 0) {
+            // %N - nanoseconds
+            snprintf(result + strlen(result), sizeof(result) - strlen(result), 
+                    "%09ld", timestamp.nanoseconds);
+            current += 2;
+        } else if (strncmp(current, "%s", 2) == 0) {
+            // %s - unix timestamp
+            snprintf(result + strlen(result), sizeof(result) - strlen(result), 
+                    "%ld", timestamp.seconds);
+            current += 2;
+        } else {
+            // Copy the character and continue
+            char temp[2] = {*current, '\0'};
+            strcat(result, temp);
+            current++;
+        }
+    }
+    
+    // Second pass: if the result still contains strftime patterns, process them
+    if (strstr(result, "%") != NULL) {
+        strftime(temp_buffer, sizeof(temp_buffer), result, tm_info);
+        strcpy(buffer, temp_buffer);
     } else {
-        // Regular strftime format
-        strftime(buffer, buffer_size, format, tm_info);
+        strcpy(buffer, result);
     }
 }
 
