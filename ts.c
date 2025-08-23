@@ -43,6 +43,12 @@ static const timestamp_format_t timestamp_formats[] = {
     // 22 dec/93 17:05:30 with year
     {"[0-9]{2} [a-z]{3}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", "%d %b/%y %H:%M:%S", "short_with_year"},
     
+    // Unix timestamp with fractional seconds: 1755921813.123456
+    {"[0-9]{10,}\\.[0-9]{1,9}", NULL, "unix_fractional"},
+    
+    // Plain Unix timestamp: 1755921813
+    {"[0-9]{10,}", NULL, "unix_plain"},
+    
     {NULL, NULL, NULL} // terminator
 };
 
@@ -67,33 +73,58 @@ time_t parse_timestamp_in_line(const char *line) {
                 strncpy(timestamp_str, line + matches[0].rm_so, len);
                 timestamp_str[len] = '\0';
                 
-                // Try to parse with strptime
-                if (strptime(timestamp_str, timestamp_formats[i].format, &tm_info) != NULL) {
-                    // Set default values for missing fields
-                    if (tm_info.tm_year == 0) {
-                        // Assume current year if year is missing
-                        time_t now = time(NULL);
-                        struct tm *now_tm = localtime(&now);
-                        tm_info.tm_year = now_tm->tm_year;
-                    }
-                    if (tm_info.tm_mon == 0) {
-                        tm_info.tm_mon = 0; // January
-                    }
-                    if (tm_info.tm_mday == 0) {
-                        tm_info.tm_mday = 1; // First day
-                    }
-                    
-                    result = mktime(&tm_info);
-                    if (result != -1) {
-                        // Check if the parsed time is in the future (likely wrong year assumption)
-                        time_t now = time(NULL);
-                        if (result > now + 86400 * 30) { // More than 30 days in future
-                            // Try with previous year
-                            tm_info.tm_year--;
-                            result = mktime(&tm_info);
+                // Handle Unix timestamp patterns specially
+                if (strcmp(timestamp_formats[i].name, "unix_fractional") == 0) {
+                    // Parse Unix timestamp with fractional seconds: 1755921813.123456
+                    char *dot_pos = strchr(timestamp_str, '.');
+                    if (dot_pos != NULL) {
+                        *dot_pos = '\0'; // Temporarily null-terminate at the dot
+                        char *endptr;
+                        time_t seconds = strtoul(timestamp_str, &endptr, 10);
+                        if (*endptr == '\0' && seconds > 0) {
+                            result = seconds;
+                            regfree(&regex);
+                            return result;
                         }
+                        *dot_pos = '.'; // Restore the dot
+                    }
+                } else if (strcmp(timestamp_formats[i].name, "unix_plain") == 0) {
+                    // Parse plain Unix timestamp: 1755921813
+                    char *endptr;
+                    time_t seconds = strtoul(timestamp_str, &endptr, 10);
+                    if (*endptr == '\0' && seconds > 0) {
+                        result = seconds;
                         regfree(&regex);
                         return result;
+                    }
+                } else if (timestamp_formats[i].format != NULL) {
+                    // Try to parse with strptime for standard formats
+                    if (strptime(timestamp_str, timestamp_formats[i].format, &tm_info) != NULL) {
+                        // Set default values for missing fields
+                        if (tm_info.tm_year == 0) {
+                            // Assume current year if year is missing
+                            time_t now = time(NULL);
+                            struct tm *now_tm = localtime(&now);
+                            tm_info.tm_year = now_tm->tm_year;
+                        }
+                        if (tm_info.tm_mon == 0) {
+                            tm_info.tm_mon = 0; // January
+                        }
+                        if (tm_info.tm_mday == 0) {
+                            tm_info.tm_mday = 1; // First day
+                        }
+                        result = mktime(&tm_info);
+                        if (result != -1) {
+                            // Check if the parsed time is in the future (likely wrong year assumption)
+                            time_t now = time(NULL);
+                            if (result > now + 86400 * 30) { // More than 30 days in future
+                                // Try with previous year
+                                tm_info.tm_year--;
+                                result = mktime(&tm_info);
+                            }
+                            regfree(&regex);
+                            return result;
+                        }
                     }
                 }
             }
@@ -226,8 +257,12 @@ void print_usage(const char *program_name) {
     fprintf(stderr, "  -u    Only output lines that are unique (different from previous line)\n");
     fprintf(stderr, "  -h    Show this help message\n");
     fprintf(stderr, "\nFormat is a strftime format string. Default: \"%%b %%d %%H:%%M:%%S\"\n");
-    fprintf(stderr, "Special extensions: %%.S (seconds with subsecond), %%.s (unix timestamp with subsecond), %%.T (time with subsecond)\n");
-    fprintf(stderr, "Nanosecond support: %%N (nanoseconds, compatible with date command)\n");
+    fprintf(stderr, "Special extensions:\n");
+    fprintf(stderr, "  %%.S    seconds with subsecond resolution\n");
+    fprintf(stderr, "  %%.s    unix timestamp with subsecond resolution\n");
+    fprintf(stderr, "  %%.T    time with subsecond resolution\n");
+    fprintf(stderr, "  %%s     unix time_t (compatible with date command)\n");
+    fprintf(stderr, "  %%N     nanoseconds (compatible with date command)\n");
 }
 
 high_res_time_t get_high_res_time(int monotonic_mode) {
