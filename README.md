@@ -1,6 +1,8 @@
 # TS - Timestamp Input
 
-A C implementation of the `ts` command from moreutils that adds timestamps to the beginning of each line of input.
+A C implementation of the `ts` command from moreutils that adds
+timestamps to the beginning of each line of input, or optionally
+reformats timestamps in the input.
 
 ## Features
 
@@ -132,4 +134,4 @@ make uninstall
 
 ## License
 
-This is a reimplementation of the `ts` command from moreutils. The original `ts` command is licensed under the GNU GPL. 
+This is a reimplementation of the `ts` command from moreutils. The original `ts` command is licensed under the GNU GPL.
