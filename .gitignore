@@ -29,6 +29,11 @@ test_ts_simple
 # Dependencies
 .deps/
 
+# Test files
+*.log
+*.trs
+test-suite.log
+
 # Coverage files
 *.gcov
 *.gcda

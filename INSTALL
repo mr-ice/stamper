@@ -51,12 +51,18 @@ Building with Autotools (Recommended)
 
 4. Run tests to verify the build:
    ```bash
-   make check
+   make test    # Detailed test output
+   make check   # Standard automake test framework
    ```
 
 5. Install system-wide (requires root):
    ```bash
    sudo make install
+   ```
+
+6. See all available targets:
+   ```bash
+   make help
    ```
 
 Configuration Options
@@ -89,7 +95,8 @@ Testing
 Run the test suite to verify functionality:
 
 ```bash
-make check
+make test    # Detailed test output
+make check   # Standard automake test framework
 ```
 
 The test suite covers all major features including:

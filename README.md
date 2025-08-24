@@ -142,10 +142,14 @@ For detailed installation instructions, see the [INSTALL](INSTALL) file.
 make
 
 # Run tests
-make check
+make test    # Detailed test output
+make check   # Standard automake test framework
 
 # Install (requires root)
 sudo make install
+
+# See all available targets
+make help
 ```
 
 ## Code Quality
