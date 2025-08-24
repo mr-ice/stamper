@@ -1,0 +1,41 @@
+# Autotools generated files
+# Copyright (C) 2025 Michael Rice <michael@ricelan.org>
+# This file is part of TS. See the COPYING file for license terms.
+Makefile
+Makefile.in
+config.h
+config.h.in~
+config.log
+config.status
+configure
+configure~
+stamp-h1
+aclocal.m4
+autom4te.cache/
+build-aux/
+
+# Compiled objects
+*.o
+*.lo
+*.la
+*.a
+*.so
+*.dylib
+
+# Executables
+ts
+test_ts_simple
+
+# Dependencies
+.deps/
+
+# Coverage files
+*.gcov
+*.gcda
+*.gcno
+
+# Editor files
+*~
+*.swp
+*.swo
+.DS_Store 

@@ -1,0 +1,47 @@
+#!/bin/sh
+# bootstrap - Set up the autotools build system
+# Copyright (C) 2025 Michael Rice <michael@ricelan.org>
+# This file is part of TS. See the COPYING file for license terms.
+
+set -e
+
+echo "Setting up autotools build system..."
+
+# Check for required tools
+for tool in autoconf automake autoheader; do
+    if ! command -v $tool >/dev/null 2>&1; then
+        echo "Error: $tool is required but not found"
+        echo "Please install autotools:"
+        echo "  macOS: brew install autoconf automake"
+        echo "  Ubuntu/Debian: sudo apt-get install autoconf automake"
+        echo "  CentOS/RHEL: sudo yum install autoconf automake"
+        exit 1
+    fi
+done
+
+# Create build-aux directory if it doesn't exist
+mkdir -p build-aux
+
+# Generate configure script
+echo "Generating configure script..."
+autoconf
+
+# Generate config.h.in
+echo "Generating config.h.in..."
+autoheader
+
+# Generate Makefile.in
+echo "Generating Makefile.in..."
+automake --add-missing --copy
+
+echo "Build system setup complete!"
+echo ""
+echo "To build the project:"
+echo "  ./configure"
+echo "  make"
+echo ""
+echo "To run tests:"
+echo "  make check"
+echo ""
+echo "To install:"
+echo "  make install" 

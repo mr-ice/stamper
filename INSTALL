@@ -1,0 +1,168 @@
+Installation Instructions for TS
+==============================
+
+Copyright (C) 2025 Michael Rice <michael@ricelan.org>
+
+This file is part of TS. See the COPYING file for license terms.
+
+This document describes how to build and install TS from source.
+
+Prerequisites
+------------
+
+You need the following tools installed on your system:
+
+- A C compiler (gcc 9.1+ or clang 17+ recommended)
+- GNU autotools (autoconf, automake, autoheader)
+- make
+
+On macOS:
+```bash
+brew install autoconf automake
+```
+
+On Ubuntu/Debian:
+```bash
+sudo apt-get install build-essential autoconf automake
+```
+
+On CentOS/RHEL:
+```bash
+sudo yum install gcc make autoconf automake
+```
+
+Building with Autotools (Recommended)
+------------------------------------
+
+1. Bootstrap the build system (first time only):
+   ```bash
+   ./bootstrap
+   ```
+
+2. Configure the build:
+   ```bash
+   ./configure
+   ```
+
+3. Build the program:
+   ```bash
+   make
+   ```
+
+4. Run tests to verify the build:
+   ```bash
+   make check
+   ```
+
+5. Install system-wide (requires root):
+   ```bash
+   sudo make install
+   ```
+
+Configuration Options
+--------------------
+
+The configure script supports several options:
+
+- `--prefix=PATH`: Set installation prefix (default: /usr/local)
+- `--enable-debug`: Enable debug build
+- `--enable-coverage`: Enable code coverage support
+- `CC=compiler`: Specify C compiler (e.g., CC=clang)
+
+Examples:
+```bash
+# Install to /opt/ts
+./configure --prefix=/opt/ts
+
+# Use clang compiler
+./configure CC=clang
+
+# Show all available options
+./configure --help
+```
+
+
+
+Testing
+-------
+
+Run the test suite to verify functionality:
+
+```bash
+make check
+```
+
+The test suite covers all major features including:
+- Basic timestamping
+- Custom formats
+- Subsecond resolution
+- Relative timestamps
+- Unix timestamp parsing
+- Unique line filtering
+- Monotonic clock support
+
+Installation Locations
+---------------------
+
+By default, files are installed to:
+
+- Executable: `/usr/local/bin/ts`
+- Documentation: `/usr/local/share/doc/ts/`
+- Man pages: `/usr/local/share/man/man1/` (if available)
+
+You can change these locations using the `--prefix` option.
+
+Uninstallation
+--------------
+
+To remove the installed files:
+
+```bash
+sudo make uninstall
+```
+
+Troubleshooting
+--------------
+
+Common issues and solutions:
+
+1. **"autoconf not found"**: Install autotools package for your system
+2. **"C11 not supported"**: Update your compiler to a newer version
+3. **"clock_gettime not found"**: Your system may be missing POSIX extensions
+4. **"Permission denied"**: Use sudo for system-wide installation
+
+For more help, check the README.md file or run:
+```bash
+./ts --help
+```
+
+Cross-Compilation
+-----------------
+
+To build for a different architecture:
+
+```bash
+./configure --host=target-triplet
+```
+
+Replace `target-triplet` with the appropriate target (e.g., `aarch64-linux-gnu`).
+
+Development Builds
+-----------------
+
+For development work:
+
+```bash
+# Debug build with symbols
+./configure CFLAGS="-g -O0"
+make
+
+# Release build
+./configure CFLAGS="-O2 -DNDEBUG"
+make
+
+# Coverage build
+./configure CFLAGS="--coverage"
+make
+make coverage
+```

@@ -1,0 +1,11 @@
+2025-08-23 (Version 1.0.0)  Michael Rice <michael@riceclan.org>
+
+	* Complete reimplementation of ts command from moreutils
+	* Added subsecond resolution and formatting options from `date` (%.S, %.s, %.T, %N, %s)
+	* Added relative timestamp conversion (-r) with Unix timestamp parsing
+	* Added unique line filtering (-u)
+	* Added monotonic clock support (-m)
+	* Comprehensive error handling and bounds checking
+	* Production-grade C11 code with modern safety features
+	* Full test suite with 12 test cases
+	* GNU autotools build system

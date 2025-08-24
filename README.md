@@ -1,5 +1,9 @@
 # TS - Timestamp Input
 
+Copyright (C) 2025 Michael Rice <michael@ricelan.org>
+
+This file is part of TS. See the COPYING file for license terms.
+
 A C implementation of the `ts` command from moreutils that adds
 timestamps to the beginning of each line of input, or optionally
 reformats timestamps in the input.
@@ -125,32 +129,23 @@ echo "2025-12-22T22:25:23 server: message" | ./ts -r
 # Output: 242d23h ago server: message
 ```
 
-## Building
+## Building and Installation
+
+For detailed installation instructions, see the [INSTALL](INSTALL) file.
+
+### Quick Start
 
 ```bash
+# Bootstrap and build
+./bootstrap
+./configure
 make
-```
 
-## Testing
+# Run tests
+make check
 
-```bash
-make test
-```
-
-Runs a comprehensive test suite covering all functionality.
-
-## Installation
-
-```bash
-make install
-```
-
-This will install the program to `/usr/local/bin/`.
-
-## Uninstallation
-
-```bash
-make uninstall
+# Install (requires root)
+sudo make install
 ```
 
 ## Code Quality
@@ -166,7 +161,7 @@ This implementation features:
 
 ## Limitations
 
-None - all features are fully implemented and tested.
+None known - all features are fully implemented and tested.
 
 ## License
 

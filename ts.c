@@ -1,3 +1,25 @@
+/*
+ * ts - timestamp tool
+ *
+ * Copyright (C) 2025  Michael Rice <michael@riceclan.org>
+ *
+ * based on work by Jiri Dvorak <jiri.dvorak@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,8 +34,13 @@
 #include <stdbool.h>
 
 // Compile-time assertions for portability
+#ifdef HAVE_64BIT_TIME_T
 _Static_assert(sizeof(time_t) >= 8, "time_t must be at least 64 bits");
+#endif
+
+#ifdef HAVE_64BIT_LONG
 _Static_assert(sizeof(long) >= 8, "long must be at least 64 bits");
+#endif
 
 // Configuration constants
 #define MAX_LINE_LENGTH 4096
@@ -120,7 +147,15 @@ static high_res_time_t get_high_res_time(bool monotonic_mode) {
     high_res_time_t result = {0};
     struct timespec ts;
 
+#ifdef HAVE_CLOCK_MONOTONIC
     clockid_t clock_id = monotonic_mode ? CLOCK_MONOTONIC : CLOCK_REALTIME;
+#else
+    clockid_t clock_id = CLOCK_REALTIME;
+    if (monotonic_mode) {
+        // Fallback to realtime if monotonic is not available
+        fprintf(stderr, "Warning: CLOCK_MONOTONIC not available, using CLOCK_REALTIME\n");
+    }
+#endif
 
     if (clock_gettime(clock_id, &ts) == 0) {
         result.seconds = ts.tv_sec;
