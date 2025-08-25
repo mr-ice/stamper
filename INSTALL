@@ -60,10 +60,34 @@ Building with Autotools (Recommended)
    sudo make install
    ```
 
-6. See all available targets:
+6. Create distribution package:
+   ```bash
+   make package
+   ```
+
+7. See all available targets:
    ```bash
    make help
    ```
+
+Packaging
+---------
+
+To create a distribution package:
+
+```bash
+make package
+```
+
+This creates a compressed tarball (`ts-1.0.0.tar.gz`) containing all source files
+and build system files needed to build the project on other systems.
+
+The package includes:
+- Source code
+- Build system files (configure, Makefile.in, etc.)
+- Documentation (README.md, INSTALL, etc.)
+- License and copyright information
+- Test suite
 
 Configuration Options
 --------------------

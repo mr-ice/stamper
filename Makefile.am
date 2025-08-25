@@ -69,6 +69,13 @@ maintainer-clean: ## Remove autotools generated files
 clean-test: ## Remove test log and result files
 	rm -f *.log *.trs test-suite.log
 
+# Packaging targets
+dist-tarball: dist ## Create distribution tarball
+	@echo "Distribution tarball created: $(PACKAGE)-$(VERSION).tar.gz"
+
+package: dist-tarball ## Create distribution package (tarball)
+	@echo "Package created: $(PACKAGE)-$(VERSION).tar.gz"
+
 # Debug target
 debug: CFLAGS += -g -DDEBUG ## Build with debug symbols
 debug: all
@@ -84,5 +91,3 @@ coverage: clean all
 	./test_ts_simple
 	gcov -r ts.c
 	@echo "Coverage report generated"
-
- 

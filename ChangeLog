@@ -1,11 +1,20 @@
-2025-08-23 (Version 1.0.0)  Michael Rice <michael@riceclan.org>
+2025-08-24  Michael Rice <michael@ricelan.org>
 
-	* Complete reimplementation of ts command from moreutils
-	* Added subsecond resolution and formatting options from `date` (%.S, %.s, %.T, %N, %s)
-	* Added relative timestamp conversion (-r) with Unix timestamp parsing
-	* Added unique line filtering (-u)
-	* Added monotonic clock support (-m)
-	* Comprehensive error handling and bounds checking
-	* Production-grade C11 code with modern safety features
-	* Full test suite with 12 test cases
-	* GNU autotools build system
+	* Version 1.0.0 released
+	* Initial implementation of ts command reimplementation
+	* Implemented original ts format extensions (%.S, %.s, %.T)
+	* Added `date` format extension %N to add nanoseconds 
+	* Implemented support for mixed format strings combining strftime and ts extensions
+	* Implemented relative timestamp conversion (-r) with regex-based timestamp detection
+	* Added Unix timestamp parsing support (plain and fractional seconds)
+	* Added unique line filtering (-u) for monitoring command output changes
+	* Implemented monotonic clock support (-m) using CLOCK_MONOTONIC
+	* Refactored code to C11 standard with improved error handling
+	* Added bounds checking and memory safety improvements
+	* Implemented initial test suite with 12 test cases
+	* Added GNU autotools build system with configure script
+	* Added packaging support with make package target
+	* Added dynamic help system to the makefile with make help target
+	* Enhanced timestamp format detection and parsing in relative mode
+	* Improved error reporting and usage information
+	* Added proper cleanup targets for test artifacts

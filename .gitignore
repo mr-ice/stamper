@@ -39,6 +39,10 @@ test-suite.log
 *.gcda
 *.gcno
 
+# Packaging files
+*.tar.gz
+packaging/
+
 # Editor files
 *~
 *.swp

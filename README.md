@@ -148,6 +148,9 @@ make check   # Standard automake test framework
 # Install (requires root)
 sudo make install
 
+# Create distribution package
+make package
+
 # See all available targets
 make help
 ```

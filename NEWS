@@ -1,0 +1,6 @@
+Version 1.0.0 (2025-08-24)
+
+* Initial release of TS - a complete reimplementation of the ts command from moreutils
+* Added %N from `date` to provide fractional nanosseconds to the other fractional seconds features already in `ts`.
+* Added unique line filtering (-u) to only output lines that differ from the previous line
+* Added timestamp detection of unix timestamp and unix timestamp with fractional seconds to the replace/relative (-r) option.
