@@ -1,0 +1,328 @@
+\input texinfo
+@c -*-texinfo-*-
+@c %**start of header
+@setfilename ts.info
+@settitle TS User Manual
+@c %**end of header
+
+@copying
+Copyright @copyright{} 2025 Michael Rice
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+A copy of the license is included in the section entitled ``GNU Free
+Documentation License''.
+@end quotation
+@end copying
+
+@titlepage
+@title TS User Manual
+@subtitle Timestamp input tool
+@subtitle Version 1.0.0
+@author Michael Rice
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top TS User Manual
+
+This manual documents TS, a timestamp input tool that adds timestamps
+to the beginning of each line of input, or optionally reformats
+timestamps in the input.
+
+@insertcopying
+@end ifnottex
+
+@menu
+* Introduction::                Overview of TS
+* Invoking ts::                 Command line options
+* Format Strings::              Timestamp format specification
+* Examples::                    Usage examples
+* Environment::                 Environment variables
+* Reporting Bugs::              How to report bugs
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Invoking ts
+
+* Command Line Options::        Complete list of options
+* Format Specification::        How to specify formats
+
+Format Strings
+
+* Standard Formats::            Standard strftime formats
+* TS Extensions::               TS-specific format extensions
+* Mixed Formats::               Combining standard and extension formats
+
+Examples
+
+* Basic Usage::                 Simple timestamp examples
+* Advanced Usage::              Complex usage scenarios
+* Relative Timestamps::         Working with relative timestamps
+
+@end detailmenu
+@end menu
+
+@node Introduction
+@chapter Introduction
+
+TS is a command-line tool that adds timestamps to the beginning of each
+line of input, or optionally reformats timestamps in the input. It is
+a reimplementation of the ts command from moreutils with enhanced
+features including subsecond precision, relative timestamp conversion,
+and improved error handling.
+
+@node Invoking ts
+@chapter Invoking ts
+
+@cindex command line options
+@cindex options
+
+The format for running the ts command is:
+
+@example
+ts [@var{options}] [@var{format}]
+@end example
+
+@var{format} is an optional timestamp format string. If not specified,
+the default format @samp{%b %d %H:%M:%S} is used.
+
+@menu
+* Command Line Options::        Complete list of options
+* Format Specification::        How to specify formats
+@end menu
+
+@node Command Line Options
+@section Command Line Options
+
+@table @option
+@item -r, --relative
+Convert existing timestamps in the input to relative timestamps.
+Recognizes various timestamp formats including Unix timestamps,
+syslog format, and custom formats.
+
+@item -i, --incremental
+Show incremental timestamps (time since last line).
+
+@item -s, --since
+Show timestamps since the start of the program.
+
+@item -m, --monotonic
+Use monotonic clock instead of real-time clock.
+
+@item -u, --unique
+Only output lines that are different from the previous line.
+
+@item -h, --help
+Display help information and exit.
+
+@item -V, --version
+Display version information and exit.
+@end table
+
+@node Format Specification
+@section Format Specification
+
+The format string uses standard strftime(3) format specifiers with
+additional extensions for subsecond precision. See @ref{Format Strings}
+for complete details.
+
+@node Format Strings
+@chapter Format Strings
+
+@cindex format strings
+@cindex timestamp formats
+
+TS supports both standard strftime format specifiers and TS-specific
+extensions for enhanced timestamp formatting.
+
+@menu
+* Standard Formats::            Standard strftime formats
+* TS Extensions::               TS-specific format extensions
+* Mixed Formats::               Combining standard and extension formats
+@end menu
+
+@node Standard Formats
+@section Standard Formats
+
+TS supports all standard strftime(3) format specifiers. Common ones include:
+
+@table @code
+@item %Y
+Year with century (e.g., 2025)
+@item %m
+Month as decimal number (01-12)
+@item %d
+Day of month as decimal number (01-31)
+@item %H
+Hour as decimal number (00-23)
+@item %M
+Minute as decimal number (00-59)
+@item %S
+Second as decimal number (00-59)
+@item %s
+Unix timestamp (seconds since epoch)
+@end table
+
+@node TS Extensions
+@section TS Extensions
+
+TS provides additional format specifiers for subsecond precision:
+
+@table @code
+@item %.S
+Seconds with subsecond resolution (e.g., "44.440000")
+@item %.s
+Unix timestamp with subsecond resolution (e.g., "1755921813.440000")
+@item %.T
+Time with subsecond resolution (e.g., "22:25:23.440000")
+@item %N
+Nanoseconds (e.g., "440000000")
+@end table
+
+@node Mixed Formats
+@section Mixed Formats
+
+Standard strftime patterns can be combined with TS extensions in a
+single format string:
+
+@example
+%Y%m%d-%H%M%S.%.S
+@end example
+
+This produces output like @samp{20250822-225744.440000}.
+
+@node Examples
+@chapter Examples
+
+@cindex examples
+@cindex usage examples
+
+@menu
+* Basic Usage::                 Simple timestamp examples
+* Advanced Usage::              Complex usage scenarios
+* Relative Timestamps::         Working with relative timestamps
+@end menu
+
+@node Basic Usage
+@section Basic Usage
+
+@cindex basic usage
+
+Add default timestamp to input:
+
+@example
+$ echo "test" | ts
+Aug 25 08:15:30 test
+@end example
+
+Use custom format:
+
+@example
+$ echo "test" | ts "%Y-%m-%d %H:%M:%S"
+2025-08-25 08:15:30 test
+@end example
+
+Add subsecond precision:
+
+@example
+$ echo "test" | ts "%.S"
+44.440000 test
+@end example
+
+@node Advanced Usage
+@section Advanced Usage
+
+@cindex advanced usage
+
+Show incremental timestamps:
+
+@example
+$ echo -e "line1\nline2" | ts -i
++0.000000 line1
++0.001234 line2
+@end example
+
+Show unique lines only:
+
+@example
+$ echo -e "same\nsame\ndifferent" | ts -u
+Aug 25 08:15:30 same
+Aug 25 08:15:31 different
+@end example
+
+Use monotonic clock:
+
+@example
+$ echo "test" | ts -m
+Aug 25 08:15:30 test
+@end example
+
+@node Relative Timestamps
+@section Relative Timestamps
+
+@cindex relative timestamps
+
+Convert Unix timestamp to relative:
+
+@example
+$ echo "1755921813 test" | ts -r
+2 hours ago test
+@end example
+
+Convert syslog timestamp to relative:
+
+@example
+$ echo "Dec 22 22:25:23 test" | ts -r
+2 days ago test
+@end example
+
+@node Environment
+@chapter Environment
+
+@cindex environment variables
+
+@table @env
+@item TZ
+Time zone for timestamp formatting. See tzset(3) for details.
+@end table
+
+@node Reporting Bugs
+@chapter Reporting Bugs
+
+@cindex bugs
+@cindex reporting bugs
+
+If you find a bug in TS, please report it on the project's GitHub page:
+@url{https://github.com/mr-ice/stamper/issues}
+
+Please include:
+@itemize
+@item The version of TS you are using
+@item A description of the bug
+@item Steps to reproduce the problem
+@item The output you expected
+@item The actual output you received
+@end itemize
+
+@cindex FDL, GNU Free Documentation License
+@cindex Free Documentation License
+@cindex GNU Free Documentation License
+
+@node GNU Free Documentation License
+@appendix GNU Free Documentation License
+
+This manual is free software; you can redistribute it and/or modify
+it under the terms of the GNU Free Documentation License, Version 1.3
+or any later version published by the Free Software Foundation.
+
+@bye 

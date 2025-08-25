@@ -183,6 +183,31 @@ AC_COMPILE_IFELSE([
 # Set installation paths
 AC_PREFIX_DEFAULT([/usr/local])
 
+# Check for documentation tools
+AC_PATH_PROG([MAKEINFO], [makeinfo], [no])
+AC_PATH_PROG([INSTALL_INFO], [install-info], [no])
+
+# Enable/disable documentation
+AC_ARG_ENABLE([docs],
+    [AS_HELP_STRING([--enable-docs], [build documentation (default: auto)])],
+    [enable_docs=$enableval],
+    [enable_docs=auto])
+
+AS_IF([test "x$enable_docs" != xno], [
+    AS_IF([test "x$MAKEINFO" != xno], [
+        AC_DEFINE([HAVE_MAKEINFO], [1], [Define if makeinfo is available])
+        enable_docs=yes
+    ], [
+        AS_IF([test "x$enable_docs" = xyes], [
+            AC_MSG_ERROR([makeinfo not found but --enable-docs was specified])
+        ], [
+            enable_docs=no
+        ])
+    ])
+])
+
+AM_CONDITIONAL([BUILD_DOCS], [test "x$enable_docs" = xyes])
+
 # Generate output files
 AC_CONFIG_FILES([
     Makefile

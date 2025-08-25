@@ -1,0 +1,130 @@
+.TH TS 1 "2025-08-24" "Version 1.0.0" "User Commands"
+.SH NAME
+ts \- timestamp input
+.SH SYNOPSIS
+.B ts
+[\fIOPTIONS\fR] [\fIFORMAT\fR]
+.SH DESCRIPTION
+.B ts
+adds timestamps to the beginning of each line of input, or optionally
+reformats timestamps in the input. It is a reimplementation of the ts
+command from moreutils with enhanced features.
+.SH OPTIONS
+.TP
+.BR \-r ", " \-\-relative
+Convert existing timestamps in the input to relative timestamps.
+Recognizes various timestamp formats including Unix timestamps,
+syslog format, and custom formats.
+.TP
+.BR \-i ", " \-\-incremental
+Show incremental timestamps (time since last line).
+.TP
+.BR \-s ", " \-\-since
+Show timestamps since the start of the program.
+.TP
+.BR \-m ", " \-\-monotonic
+Use monotonic clock instead of real-time clock.
+.TP
+.BR \-u ", " \-\-unique
+Only output lines that are different from the previous line.
+.TP
+.BR \-h ", " \-\-help
+Display help information and exit.
+.TP
+.BR \-V ", " \-\-version
+Display version information and exit.
+.SH FORMAT
+The format string uses standard strftime(3) format specifiers with
+additional extensions for subsecond precision:
+.TP
+.B %.S
+Seconds with subsecond resolution (e.g., "44.440000")
+.TP
+.B %.s
+Unix timestamp with subsecond resolution (e.g., "1755921813.440000")
+.TP
+.B %.T
+Time with subsecond resolution (e.g., "22:25:23.440000")
+.TP
+.B %N
+Nanoseconds (e.g., "440000000")
+.TP
+.B %s
+Unix timestamp (seconds since epoch)
+.PP
+Standard strftime patterns can be combined with ts extensions:
+.IP
+.B "%Y%m%d-%H%M%S.%.S"
+produces output like "20250822-225744.440000"
+.SH EXAMPLES
+.TP
+Basic timestamp:
+.EX
+echo "test" | ts
+.EE
+.TP
+Custom format:
+.EX
+echo "test" | ts "%Y-%m-%d %H:%M:%S"
+.EE
+.TP
+Subsecond precision:
+.EX
+echo "test" | ts "%.S"
+.EE
+.TP
+Relative timestamps:
+.EX
+echo "1755921813 test" | ts -r
+.EE
+.TP
+Unique lines only:
+.EX
+echo -e "same\\nsame\\ndifferent" | ts -u
+.EE
+.TP
+Incremental timing:
+.EX
+echo -e "line1\\nline2" | ts -i
+.EE
+.TP
+Mixed format with subseconds:
+.EX
+echo "test" | ts "%Y%m%d-%H%M%S.%.S"
+.EE
+.SH EXIT STATUS
+.TP
+.B 0
+Successful completion
+.TP
+.B 1
+Error occurred
+.SH ENVIRONMENT
+.TP
+.B TZ
+Time zone for timestamp formatting (see tzset(3))
+.SH BUGS
+Report bugs to: <https://github.com/mr-ice/stamper/issues>
+.SH AUTHOR
+Written by Michael Rice <michael@ricelan.org>
+.SH COPYRIGHT
+Copyright \(co 2025 Michael Rice. License GPLv3+: GNU GPL version 3 or later
+<https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+.BR date (1),
+.BR strftime (3),
+.BR moreutils (1)
+.PP
+The full documentation for
+.B ts
+is maintained as a Texinfo manual. If the
+.B info
+and
+.B ts
+programs are properly installed at your site, the command
+.IP
+.B info ts
+.PP
+should give you access to the complete manual. 

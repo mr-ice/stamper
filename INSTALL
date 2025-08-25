@@ -65,7 +65,17 @@ Building with Autotools (Recommended)
    make package
    ```
 
-7. See all available targets:
+7. Build documentation:
+   ```bash
+   make docs
+   ```
+
+8. Install documentation:
+   ```bash
+   make install-docs
+   ```
+
+9. See all available targets:
    ```bash
    make help
    ```
@@ -88,6 +98,27 @@ The package includes:
 - Documentation (README.md, INSTALL, etc.)
 - License and copyright information
 - Test suite
+
+Documentation
+------------
+
+TS provides comprehensive documentation in multiple formats:
+
+**Man Pages**: Traditional Unix manual pages
+```bash
+make docs          # Build man pages
+make install-docs  # Install man pages
+man ts             # View manual
+```
+
+**Info Pages**: GNU Texinfo documentation (requires makeinfo)
+```bash
+make info          # Build info pages
+make install-info  # Install info pages
+info ts            # View info manual
+```
+
+**Whatis Database**: The man page installation automatically updates the whatis database for quick command lookups.
 
 Configuration Options
 --------------------

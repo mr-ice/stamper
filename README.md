@@ -151,6 +151,12 @@ sudo make install
 # Create distribution package
 make package
 
+# Build documentation
+make docs
+
+# Install documentation
+make install-docs
+
 # See all available targets
 make help
 ```

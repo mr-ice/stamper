@@ -39,7 +39,7 @@ help: ## Show this help message
 	@echo "For more information, see the README.md and INSTALL files."
 
 # Additional files to distribute
-EXTRA_DIST = README.md configure.ac Makefile.am NEWS AUTHORS ChangeLog
+EXTRA_DIST = README.md configure.ac Makefile.am NEWS AUTHORS ChangeLog doc/ts.1 doc/ts.texi
 
 # Clean additional files
 CLEANFILES = *.o *.lo *.la *.log *.trs test-suite.log
@@ -68,6 +68,16 @@ maintainer-clean: ## Remove autotools generated files
 # Additional clean target for test artifacts
 clean-test: ## Remove test log and result files
 	rm -f *.log *.trs test-suite.log
+
+# Documentation
+man_MANS = doc/ts.1
+info_TEXINFOS = doc/ts.texi
+
+# Documentation targets
+docs: ## Build documentation (man and info)
+	@echo "Building documentation..."
+
+install-docs: install-man install-info ## Install documentation
 
 # Packaging targets
 dist-tarball: dist ## Create distribution tarball

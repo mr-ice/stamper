@@ -36,6 +36,9 @@
 /* Define to 1 if you have the 'localtime' function. */
 #undef HAVE_LOCALTIME
 
+/* Define if makeinfo is available */
+#undef HAVE_MAKEINFO
+
 /* Define to 1 if you have the 'mktime' function. */
 #undef HAVE_MKTIME
 
