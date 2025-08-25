@@ -61,7 +61,7 @@ maintainer-clean-local: ## Clean autotools generated files
 # Standard targets with descriptions
 check: ## Run standard automake test framework
 install: ## Install the program system-wide
-clean: clean-test ## Remove build artifacts and test files
+clean: clean-test clean-generic ## Remove build artifacts and test files
 distclean: ## Remove all generated files
 maintainer-clean: ## Remove autotools generated files
 
