@@ -39,6 +39,9 @@ test-suite.log
 *.gcda
 *.gcno
 
+# Documentation files
+*.info
+
 # Packaging files
 *.tar.gz
 packaging/

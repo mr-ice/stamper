@@ -22,6 +22,10 @@ done
 # Create build-aux directory if it doesn't exist
 mkdir -p build-aux
 
+# Generate aclocal.m4 (required for AM_INIT_AUTOMAKE and AM_CONDITIONAL)
+echo "Generating aclocal.m4..."
+aclocal
+
 # Generate configure script
 echo "Generating configure script..."
 autoconf

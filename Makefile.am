@@ -36,13 +36,19 @@ help: ## Show this help message
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
+	@echo "Clean target order (from least to most aggressive):"
+	@echo "  make clean-test    # Remove test artifacts"
+	@echo "  make clean         # Remove build artifacts (object files, executables)"
+	@echo "  make maintainer-clean # Remove autotools files (Makefile.in, configure, etc.)"
+	@echo "  make distclean     # Remove generated files (Makefile, config.h, etc.)"
+	@echo ""
 	@echo "For more information, see the README.md and INSTALL files."
 
 # Additional files to distribute
 EXTRA_DIST = README.md configure.ac Makefile.am NEWS AUTHORS ChangeLog doc/ts.1 doc/ts.texi
 
 # Clean additional files
-CLEANFILES = *.o *.lo *.la *.log *.trs test-suite.log
+CLEANFILES = *.o *.lo *.la *.log *.trs test-suite.log ts test_ts_simple doc/*.info
 
 # Install man page if available
 # man_MANS = ts.1
@@ -57,13 +63,26 @@ maintainer-clean-local: ## Clean autotools generated files
 	rm -rf autom4te.cache
 	rm -f config.h.in~
 	rm -f configure~
+	rm -f Makefile.in
+	rm -f aclocal.m4
+	rm -rf build-aux
+	rm -f configure
+	rm -f *.tar.gz
+	rm -rf packaging
+
+# Super clean target for maintainers (runs all clean targets in correct order)
+maintainer-clean-WARNING-very-clean:
+	@echo "WARNING: This will remove ALL generated files including autotools files!"
+	@echo "You will need to run './bootstrap && ./configure' to rebuild."
+	@echo "Press Ctrl+C to cancel or any key to continue..."
+	@read -n 1
+	make clean-test
+	make maintainer-clean  # This automatically runs distclean and clean
+	@echo "All generated files removed. Run './bootstrap && ./configure' to rebuild."
 
 # Standard targets with descriptions
 check: ## Run standard automake test framework
 install: ## Install the program system-wide
-clean: clean-test clean-generic ## Remove build artifacts and test files
-distclean: ## Remove all generated files
-maintainer-clean: ## Remove autotools generated files
 
 # Additional clean target for test artifacts
 clean-test: ## Remove test log and result files
@@ -74,8 +93,8 @@ man_MANS = doc/ts.1
 info_TEXINFOS = doc/ts.texi
 
 # Documentation targets
-docs: ## Build documentation (man and info)
-	@echo "Building documentation..."
+docs: info ## Build documentation (man and info)
+	@echo "Documentation built successfully"
 
 install-docs: install-man install-info ## Install documentation
 
