@@ -20,6 +20,10 @@
  */
 #include "config.h"
 
+/* Feature test macros to enable POSIX functions */
+#define _POSIX_C_SOURCE 200809L
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -48,6 +48,7 @@ timestamps in the input.
 * Examples::                    Usage examples
 * Environment::                 Environment variables
 * Reporting Bugs::              How to report bugs
+* GNU Free Documentation License:: License information
 
 @detailmenu
  --- The Detailed Node Listing ---

@@ -41,35 +41,10 @@ AC_COMPILE_IFELSE([
 ])
 
 # Check for required headers
-AC_CHECK_HEADERS([
-    stdio.h
-    stdlib.h
-    string.h
-    time.h
-    unistd.h
-    getopt.h
-    sys/time.h
-    regex.h
-    errno.h
-    assert.h
-    stdarg.h
-    stdbool.h
-])
+AC_CHECK_HEADERS([stdio.h stdlib.h string.h time.h unistd.h getopt.h sys/time.h regex.h errno.h assert.h stdarg.h stdbool.h])
 
 # Check for required functions
-AC_CHECK_FUNCS([
-    clock_gettime
-    strptime
-    strnlen
-    vsnprintf
-    regcomp
-    regexec
-    regfree
-    mktime
-    localtime
-    gmtime
-    time
-])
+AC_CHECK_FUNCS([clock_gettime strptime strnlen vsnprintf regcomp regexec regfree mktime localtime gmtime time])
 
 # Check for specific time-related capabilities
 AC_MSG_CHECKING([for CLOCK_REALTIME support])

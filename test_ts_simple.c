@@ -17,7 +17,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
- */#include <stdio.h>
+ *//* Feature test macros to enable POSIX functions */
+#define _POSIX_C_SOURCE 200809L
+#define _GNU_SOURCE
+
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>

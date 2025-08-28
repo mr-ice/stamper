@@ -1,51 +1,38 @@
-#!/bin/sh
-# bootstrap - Set up the autotools build system
-# Copyright (C) 2025 Michael Rice <michael@ricelan.org>
-# This file is part of TS. See the COPYING file for license terms.
+#!/bin/bash
+# Bootstrap script for TS (Timestamp Tool)
+# This script sets up the build environment and generates necessary files
 
 set -e
 
-echo "Setting up autotools build system..."
+echo "Bootstrapping TS build environment..."
 
 # Check for required tools
-for tool in autoconf automake autoheader; do
-    if ! command -v $tool >/dev/null 2>&1; then
-        echo "Error: $tool is required but not found"
-        echo "Please install autotools:"
-        echo "  macOS: brew install autoconf automake"
-        echo "  Ubuntu/Debian: sudo apt-get install autoconf automake"
-        echo "  CentOS/RHEL: sudo yum install autoconf automake"
+check_tool() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        echo "ERROR: $1 is required but not found. Please install it first."
         exit 1
     fi
-done
+}
 
-# Create build-aux directory if it doesn't exist
-mkdir -p build-aux
-
-# Generate aclocal.m4 (required for AM_INIT_AUTOMAKE and AM_CONDITIONAL)
-echo "Generating aclocal.m4..."
-aclocal
+echo "Checking for required tools..."
+check_tool autoconf
+check_tool automake
+check_tool make
+check_tool gcc
 
 # Generate configure script
 echo "Generating configure script..."
 autoconf
 
-# Generate config.h.in
-echo "Generating config.h.in..."
-autoheader
-
 # Generate Makefile.in
 echo "Generating Makefile.in..."
 automake --add-missing --copy
 
-echo "Build system setup complete!"
+echo "Bootstrap complete!"
 echo ""
-echo "To build the project:"
+echo "Next steps:"
 echo "  ./configure"
 echo "  make"
+echo "  make test"
 echo ""
-echo "To run tests:"
-echo "  make check"
-echo ""
-echo "To install:"
-echo "  make install" 
+echo "For more information, see BUILD.md" 
