@@ -26,7 +26,11 @@ sudo dnf install texinfo --enablerepo=codeready-builder-for-rhel-9-$(arch)-rpms
 ```bash
 # Install development tools
 sudo apt-get update
-sudo apt-get install build-essential autoconf automake texinfo
+sudo apt-get install build-essential autoconf automake
+
+# Note: texinfo is not available in Ubuntu 20/22 default repositories
+# The build system will automatically skip info documentation if
+# texinfo/makeinfo is not available 
 ```
 
 #### macOS
@@ -84,6 +88,14 @@ make debug
 make release
 ```
 
+#### Super Clean (Maintainers)
+To remove ALL generated files including autotools files:
+```bash
+./super-clean
+```
+
+**Note**: The old `make maintainer-clean-WARNING-very-clean` target is deprecated and will show an error message directing you to use `./super-clean` instead. The standalone script handles the case where the Makefile is removed during cleanup.
+
 ## Troubleshooting
 
 ### Common Issues
@@ -93,6 +105,14 @@ This is a common issue on RHEL9 where texinfo is not in the default repositories
 ```bash
 sudo dnf install texinfo --enablerepo=codeready-builder-for-rhel-9-$(arch)-rpms
 ```
+
+#### "makeinfo: command not found" on Ubuntu 20/22 and RHEL8
+On Ubuntu 20, Ubuntu 22, and RHEL8, the texinfo package is not available in the default repositories. The build system now automatically detects this and skips info documentation generation. You'll see a warning message:
+```
+configure: WARNING: makeinfo not found, info documentation will be skipped
+```
+
+This is normal and the build will complete successfully without info documentation. If you need info documentation, you can install texinfo from source or use a different distribution.
 
 
 ## Cross-Platform Compatibility

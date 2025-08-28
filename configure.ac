@@ -177,6 +177,9 @@ AS_IF([test "x$enable_docs" != xno], [
             AC_MSG_ERROR([makeinfo not found but --enable-docs was specified])
         ], [
             enable_docs=no
+            # Set MAKEINFO to a dummy value that will cause the build to skip info generation
+            MAKEINFO=":"
+            AC_MSG_WARN([makeinfo not found, info documentation will be skipped])
         ])
     ])
 ])

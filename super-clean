@@ -1,0 +1,40 @@
+#!/bin/bash
+# Super clean script for maintainers
+# This script removes ALL generated files including autotools files
+
+set -e
+
+echo "WARNING: This will remove ALL generated files including autotools files!"
+echo "You will need to run './bootstrap && ./configure' to rebuild."
+echo "Press Ctrl+C to cancel or any key to continue..."
+read -n 1
+
+echo "Cleaning test artifacts..."
+rm -f *.log *.trs test-suite.log
+
+echo "Running maintainer-clean..."
+# Always use manual cleanup to avoid issues with build-aux/missing and cross-platform paths
+echo "Cleaning manually to avoid cross-platform path issues..."
+rm -rf autom4te.cache
+rm -f config.h.in~
+rm -f configure~
+rm -f Makefile.in
+rm -f aclocal.m4
+rm -rf build-aux
+rm -f configure
+rm -f *.tar.gz
+rm -rf packaging
+rm -f config.status config.cache config.log configure.lineno config.status.lineno
+rm -rf ./autom4te.cache
+rm -f ./.deps/*.Po 2>/dev/null || true
+rm -f Makefile
+rm -f config.h
+rm -f ts test_ts_simple
+rm -f *.o
+rm -rf doc/ts.t2d doc/ts.t2p
+rm -f doc/ts.info*
+rm -f doc/.dirstamp
+rm -f stamp-h1
+rm -rf .deps
+
+echo "All generated files removed. Run './bootstrap && ./configure' to rebuild."

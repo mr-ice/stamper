@@ -41,6 +41,7 @@ help: ## Show this help message
 	@echo "  make clean         # Remove build artifacts (object files, executables)"
 	@echo "  make maintainer-clean # Remove autotools files (Makefile.in, configure, etc.)"
 	@echo "  make distclean     # Remove generated files (Makefile, config.h, etc.)"
+	@echo "  ./super-clean      # Remove ALL generated files (including autotools files)"
 	@echo ""
 	@echo "For more information, see the README.md and INSTALL files."
 
@@ -69,16 +70,6 @@ maintainer-clean-local: ## Clean autotools generated files
 	rm -f configure
 	rm -f *.tar.gz
 	rm -rf packaging
-
-# Super clean target for maintainers (runs all clean targets in correct order)
-maintainer-clean-WARNING-very-clean:
-	@echo "WARNING: This will remove ALL generated files including autotools files!"
-	@echo "You will need to run './bootstrap && ./configure' to rebuild."
-	@echo "Press Ctrl+C to cancel or any key to continue..."
-	@read -n 1
-	make clean-test
-	make maintainer-clean  # This automatically runs distclean and clean
-	@echo "All generated files removed. Run './bootstrap && ./configure' to rebuild."
 
 # Standard targets with descriptions
 check: ## Run standard automake test framework
