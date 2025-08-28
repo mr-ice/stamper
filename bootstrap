@@ -17,12 +17,25 @@ check_tool() {
 echo "Checking for required tools..."
 check_tool autoconf
 check_tool automake
+check_tool aclocal
 check_tool make
 check_tool gcc
+
+# Create build-aux directory if it doesn't exist
+echo "Setting up build directories..."
+mkdir -p build-aux
+
+# Generate aclocal.m4 (required for AM_INIT_AUTOMAKE and AM_CONDITIONAL)
+echo "Generating aclocal.m4..."
+aclocal
 
 # Generate configure script
 echo "Generating configure script..."
 autoconf
+
+# Generate config.h.in
+echo "Generating config.h.in..."
+autoheader
 
 # Generate Makefile.in
 echo "Generating Makefile.in..."

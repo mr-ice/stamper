@@ -42,7 +42,10 @@ brew install texinfo
 
 ### Standard Build
 ```bash
-# Generate configure script
+# Bootstrap the build system (recommended)
+./bootstrap
+
+# Or manually generate configure script
 autoconf
 
 # Configure the build
@@ -52,7 +55,7 @@ autoconf
 make
 
 # Run tests
-make check
+make test
 
 # Install (optional)
 sudo make install
