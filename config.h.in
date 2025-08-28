@@ -12,7 +12,7 @@
 /* Define if C11 is supported */
 #undef HAVE_C11
 
-/* Define to 1 if you have the `clock_gettime' function. */
+/* Define to 1 if you have the 'clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
 /* Define if CLOCK_MONOTONIC is supported */
@@ -27,37 +27,34 @@
 /* Define to 1 if you have the <getopt.h> header file. */
 #undef HAVE_GETOPT_H
 
-/* Define to 1 if you have the `gmtime' function. */
+/* Define to 1 if you have the 'gmtime' function. */
 #undef HAVE_GMTIME
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if you have the `localtime' function. */
+/* Define to 1 if you have the 'localtime' function. */
 #undef HAVE_LOCALTIME
 
 /* Define if makeinfo is available */
 #undef HAVE_MAKEINFO
 
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
-
-/* Define to 1 if you have the `mktime' function. */
+/* Define to 1 if you have the 'mktime' function. */
 #undef HAVE_MKTIME
 
 /* Define if POSIX regex is supported */
 #undef HAVE_POSIX_REGEX
 
-/* Define to 1 if you have the `regcomp' function. */
+/* Define to 1 if you have the 'regcomp' function. */
 #undef HAVE_REGCOMP
 
-/* Define to 1 if you have the `regexec' function. */
+/* Define to 1 if you have the 'regexec' function. */
 #undef HAVE_REGEXEC
 
 /* Define to 1 if you have the <regex.h> header file. */
 #undef HAVE_REGEX_H
 
-/* Define to 1 if you have the `regfree' function. */
+/* Define to 1 if you have the 'regfree' function. */
 #undef HAVE_REGFREE
 
 /* Define to 1 if you have the <stdarg.h> header file. */
@@ -81,7 +78,7 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
-/* Define to 1 if you have the `strnlen' function. */
+/* Define to 1 if you have the 'strnlen' function. */
 #undef HAVE_STRNLEN
 
 /* Define if strptime is supported */
@@ -96,7 +93,7 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
-/* Define to 1 if you have the `time' function. */
+/* Define to 1 if you have the 'time' function. */
 #undef HAVE_TIME
 
 /* Define to 1 if you have the <time.h> header file. */
@@ -105,7 +102,7 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define to 1 if you have the `vsnprintf' function. */
+/* Define to 1 if you have the 'vsnprintf' function. */
 #undef HAVE_VSNPRINTF
 
 /* Name of package */
@@ -129,7 +126,9 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C89 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
 /* Version number of package */
