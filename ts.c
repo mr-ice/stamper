@@ -121,7 +121,11 @@ static const timestamp_format_t timestamp_formats[] = {
 };
 
 // Safe string concatenation with bounds checking
+#ifdef TS_TESTING
+ts_error_t safe_strcat(char *dest, size_t dest_size, const char *src) {
+#else
 static ts_error_t safe_strcat(char *dest, size_t dest_size, const char *src) {
+#endif
     if (!dest || !src) {
         return TS_ERROR_INVALID_ARGUMENT;
     }
@@ -138,7 +142,11 @@ static ts_error_t safe_strcat(char *dest, size_t dest_size, const char *src) {
 }
 
 // Safe string formatting with bounds checking
+#ifdef TS_TESTING
+ts_error_t safe_snprintf(char *dest, size_t dest_size, const char *format, ...) {
+#else
 static ts_error_t safe_snprintf(char *dest, size_t dest_size, const char *format, ...) {
+#endif
     if (!dest || !format) {
         return TS_ERROR_INVALID_ARGUMENT;
     }
@@ -156,7 +164,11 @@ static ts_error_t safe_snprintf(char *dest, size_t dest_size, const char *format
 }
 
 // Get high-resolution timestamp
+#ifdef TS_TESTING
+high_res_time_t get_high_res_time(bool monotonic_mode) {
+#else
 static high_res_time_t get_high_res_time(bool monotonic_mode) {
+#endif
     high_res_time_t result = {0};
     struct timespec ts;
 
@@ -179,7 +191,11 @@ static high_res_time_t get_high_res_time(bool monotonic_mode) {
 }
 
 // Parse Unix timestamp with fractional seconds
+#ifdef TS_TESTING
+ts_error_t parse_unix_timestamp_fractional(const char *timestamp_str, time_t *result) {
+#else
 static ts_error_t parse_unix_timestamp_fractional(const char *timestamp_str, time_t *result) {
+#endif
     if (!timestamp_str || !result) {
         return TS_ERROR_INVALID_ARGUMENT;
     }
@@ -208,7 +224,11 @@ static ts_error_t parse_unix_timestamp_fractional(const char *timestamp_str, tim
 }
 
 // Parse plain Unix timestamp
+#ifdef TS_TESTING
+ts_error_t parse_unix_timestamp_plain(const char *timestamp_str, time_t *result) {
+#else
 static ts_error_t parse_unix_timestamp_plain(const char *timestamp_str, time_t *result) {
+#endif
     if (!timestamp_str || !result) {
         return TS_ERROR_INVALID_ARGUMENT;
     }
@@ -446,7 +466,11 @@ static ts_error_t parse_timestamp_strptime(const char *timestamp_str, const char
 }
 
 // Detect and parse timestamp in a line with fractional seconds
+#ifdef TS_TESTING
+ts_error_t parse_timestamp_in_line_with_fractional(const char *line, time_t *result, long *fractional_seconds) {
+#else
 static ts_error_t parse_timestamp_in_line_with_fractional(const char *line, time_t *result, long *fractional_seconds) {
+#endif
     if (!line || !result) {
         return TS_ERROR_INVALID_ARGUMENT;
     }
@@ -525,7 +549,11 @@ static ts_error_t parse_timestamp_in_line_with_fractional(const char *line, time
 
 
 // Find the leftmost timestamp match in a line
+#ifdef TS_TESTING
+ts_error_t find_timestamp_match(const char *line, int *start_pos, int *end_pos) {
+#else
 static ts_error_t find_timestamp_match(const char *line, int *start_pos, int *end_pos) {
+#endif
     if (!line || !start_pos || !end_pos) {
         return TS_ERROR_INVALID_ARGUMENT;
     }
@@ -563,8 +591,13 @@ static ts_error_t find_timestamp_match(const char *line, int *start_pos, int *en
 }
 
 // Replace timestamp in a line with a new formatted timestamp
+#ifdef TS_TESTING
+ts_error_t replace_timestamp_in_line(char *output, size_t output_size,
+                                   const char *line, const char *new_timestamp) {
+#else
 static ts_error_t replace_timestamp_in_line(char *output, size_t output_size,
                                           const char *line, const char *new_timestamp) {
+#endif
     if (!output || !line || !new_timestamp) {
         return TS_ERROR_INVALID_ARGUMENT;
     }
@@ -607,7 +640,11 @@ static ts_error_t replace_timestamp_in_line(char *output, size_t output_size,
 }
 
 // Format time difference as "X ago" or "in X" with optional fractional seconds
+#ifdef TS_TESTING
+ts_error_t format_relative_time(char *buffer, size_t buffer_size, time_t timestamp, long fractional_seconds) {
+#else
 static ts_error_t format_relative_time(char *buffer, size_t buffer_size, time_t timestamp, long fractional_seconds) {
+#endif
     if (!buffer) {
         return TS_ERROR_INVALID_ARGUMENT;
     }
@@ -714,8 +751,13 @@ static ts_error_t format_relative_time(char *buffer, size_t buffer_size, time_t 
 }
 
 // Format timestamp with subsecond resolution
+#ifdef TS_TESTING
+ts_error_t format_timestamp_with_subsecond(char *buffer, size_t buffer_size,
+                                         const char *format, const high_res_time_t *timestamp) {
+#else
 static ts_error_t format_timestamp_with_subsecond(char *buffer, size_t buffer_size,
                                                  const char *format, const high_res_time_t *timestamp) {
+#endif
     if (!buffer || !format || !timestamp) {
         return TS_ERROR_INVALID_ARGUMENT;
     }
@@ -816,8 +858,13 @@ static ts_error_t format_timestamp_with_subsecond(char *buffer, size_t buffer_si
 }
 
 // Process a single line with timestamp
+#ifdef TS_TESTING
+ts_error_t process_line(const char *line, const char *format,
+                       const high_res_time_t *current_time) {
+#else
 static ts_error_t process_line(const char *line, const char *format,
                               const high_res_time_t *current_time) {
+#endif
     if (!line || !format || !current_time) {
         return TS_ERROR_INVALID_ARGUMENT;
     }
