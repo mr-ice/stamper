@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2025  Michael Rice <michael@riceclan.org>
  *
- * based on work by Jiri Dvorak <jiri.dvorak@gmail.com>
+ * based on work by Joey Hess <joey@kitenet.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,6 +86,15 @@ typedef struct {
 static const timestamp_format_t timestamp_formats[] = {
     // syslog format: Dec 22 22:25:23
     {"[A-Za-z]{3} [0-9]{1,2} [0-9]{2}:[0-9]{2}:[0-9]{2}", "%b %d %H:%M:%S", "syslog"},
+
+    // ISO-8601 with fractional seconds and timezone: 2025-09-05T10:10:10.124456-0500 (most specific, check first)
+    {"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{1,9}[+-][0-9]{4}", "%Y-%m-%dT%H:%M:%S.%f%z", "ISO-8601-fractional-tz"},
+
+    // ISO-8601 with fractional seconds (no timezone): 2025-09-05T10:10:10.500000 (second most specific)
+    {"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{1,9}", "%Y-%m-%dT%H:%M:%S.%f", "ISO-8601-fractional"},
+
+    // ISO-8601 with timezone: 2025-09-05T10:10:09-0500 (more specific, check third)
+    {"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{4}", "%Y-%m-%dT%H:%M:%S%z", "ISO-8601-tz"},
 
     // ISO-8601: 2025-12-22T22:25:23.123Z
     {"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}", "%Y-%m-%dT%H:%M:%S", "ISO-8601"},
@@ -216,6 +225,173 @@ static ts_error_t parse_unix_timestamp_plain(const char *timestamp_str, time_t *
     return TS_SUCCESS;
 }
 
+// Parse timestamp with fractional seconds using strptime
+static ts_error_t parse_timestamp_strptime_with_fractional(const char *timestamp_str, const char *format,
+                                                          time_t *result, long *fractional_seconds) {
+    if (!timestamp_str || !format || !result) {
+        return TS_ERROR_INVALID_ARGUMENT;
+    }
+
+    // Extract fractional seconds first
+    if (fractional_seconds) {
+        *fractional_seconds = 0;
+        const char *dot_pos = strchr(timestamp_str, '.');
+        if (dot_pos) {
+            const char *tz_pos = strpbrk(dot_pos, "+-Z");
+            if (tz_pos) {
+                // Extract fractional part between dot and timezone
+                char frac_str[16];
+                size_t frac_len = tz_pos - dot_pos - 1; // -1 to exclude the dot
+                if (frac_len > 0 && frac_len < sizeof(frac_str)) {
+                    strncpy(frac_str, dot_pos + 1, frac_len);
+                    frac_str[frac_len] = '\0';
+                    // Convert to microseconds (assuming up to 6 digits)
+                    long frac_val = 0;
+                    for (size_t i = 0; i < frac_len && i < 6; i++) {
+                        if (frac_str[i] >= '0' && frac_str[i] <= '9') {
+                            frac_val = frac_val * 10 + (frac_str[i] - '0');
+                        }
+                    }
+                    // Pad to microseconds if needed
+                    for (size_t i = frac_len; i < 6; i++) {
+                        frac_val *= 10;
+                    }
+                    *fractional_seconds = frac_val;
+                }
+            } else {
+                // No timezone, extract to end of string
+                char frac_str[16];
+                size_t frac_len = strlen(dot_pos + 1);
+                if (frac_len > 0 && frac_len < sizeof(frac_str)) {
+                    strncpy(frac_str, dot_pos + 1, frac_len);
+                    frac_str[frac_len] = '\0';
+                    // Convert to microseconds (assuming up to 6 digits)
+                    long frac_val = 0;
+                    for (size_t i = 0; i < frac_len && i < 6; i++) {
+                        if (frac_str[i] >= '0' && frac_str[i] <= '9') {
+                            frac_val = frac_val * 10 + (frac_str[i] - '0');
+                        }
+                    }
+                    // Pad to microseconds if needed
+                    for (size_t i = frac_len; i < 6; i++) {
+                        frac_val *= 10;
+                    }
+                    *fractional_seconds = frac_val;
+                }
+            }
+        }
+    }
+
+    // Extract timezone offset if present
+    int tz_offset_seconds = 0;
+    const char *tz_pos = strpbrk(timestamp_str, "+-");
+    if (tz_pos) {
+        // Parse timezone offset manually (e.g., "-0500" = -5 hours)
+        int sign = (*tz_pos == '-') ? -1 : 1;
+        int hours = 0, minutes = 0;
+        if (sscanf(tz_pos + 1, "%2d%2d", &hours, &minutes) == 2) {
+            tz_offset_seconds = sign * (hours * 3600 + minutes * 60);
+        }
+    }
+
+    // Create a modified format string without %f and %z for strptime
+    char modified_format[MAX_FORMAT_LENGTH];
+    char modified_timestamp[MAX_TIMESTAMP_LENGTH];
+
+    // Copy the format and remove %f and %z
+    strncpy(modified_format, format, sizeof(modified_format) - 1);
+    modified_format[sizeof(modified_format) - 1] = '\0';
+
+    // Remove %f from the format string
+    char *f_pos = strstr(modified_format, "%f");
+    if (f_pos) {
+        memmove(f_pos, f_pos + 2, strlen(f_pos + 2) + 1);
+    }
+
+    // Remove %z from the format string
+    char *z_pos = strstr(modified_format, "%z");
+    if (z_pos) {
+        memmove(z_pos, z_pos + 2, strlen(z_pos + 2) + 1);
+    }
+
+    // Copy the timestamp and remove fractional part and timezone
+    strncpy(modified_timestamp, timestamp_str, sizeof(modified_timestamp) - 1);
+    modified_timestamp[sizeof(modified_timestamp) - 1] = '\0';
+
+    // Find and remove fractional part
+    char *dot_pos = strchr(modified_timestamp, '.');
+    if (dot_pos) {
+        char *tz_pos_mod = strpbrk(dot_pos, "+-Z");
+        if (tz_pos_mod) {
+            // Remove fractional part and timezone
+            *dot_pos = '\0';
+        } else {
+            // Remove fractional part to end of string
+            *dot_pos = '\0';
+        }
+    } else {
+        // Remove timezone if no fractional part
+        char *tz_pos_mod = strpbrk(modified_timestamp, "+-Z");
+        if (tz_pos_mod) {
+            *tz_pos_mod = '\0';
+        }
+    }
+
+    struct tm tm_info = {0};
+    char *parse_result = strptime(modified_timestamp, modified_format, &tm_info);
+
+    if (!parse_result) {
+        return TS_ERROR_TIME_PARSE;
+    }
+
+
+    // Set default values for missing fields
+    if (tm_info.tm_year == 0) {
+        time_t now = time(NULL);
+        if (now == (time_t)-1) {
+            return TS_ERROR_SYSTEM;
+        }
+        struct tm *now_tm = localtime(&now);
+        if (!now_tm) {
+            return TS_ERROR_SYSTEM;
+        }
+        tm_info.tm_year = now_tm->tm_year;
+    }
+
+    if (tm_info.tm_mon == 0) {
+        tm_info.tm_mon = 0; // January
+    }
+
+    if (tm_info.tm_mday == 0) {
+        tm_info.tm_mday = 1; // First day
+    }
+
+    *result = mktime(&tm_info);
+    if (*result == (time_t)-1) {
+        return TS_ERROR_TIME_PARSE;
+    }
+
+    // Check if the parsed time is in the future (likely wrong year assumption)
+    time_t now = time(NULL);
+    if (now != (time_t)-1 && *result > now + SECONDS_PER_DAY * FUTURE_THRESHOLD_DAYS) {
+        // Try with previous year
+        tm_info.tm_year--;
+        *result = mktime(&tm_info);
+        if (*result == (time_t)-1) {
+            return TS_ERROR_TIME_PARSE;
+        }
+    }
+
+    // Apply timezone offset
+    // mktime assumes local time, but we want to convert from the specified timezone to local time
+    // The timezone offset tells us how far the timestamp is from UTC
+    // For example, -0500 means the timestamp is 5 hours behind UTC
+    // So we need to add the offset to convert to UTC, then mktime will convert to local time
+    *result += tz_offset_seconds;
+
+    return TS_SUCCESS;
+}
+
 // Parse timestamp using strptime
 static ts_error_t parse_timestamp_strptime(const char *timestamp_str, const char *format, time_t *result) {
     if (!timestamp_str || !format || !result) {
@@ -269,8 +445,8 @@ static ts_error_t parse_timestamp_strptime(const char *timestamp_str, const char
     return TS_SUCCESS;
 }
 
-// Detect and parse timestamp in a line
-static ts_error_t parse_timestamp_in_line(const char *line, time_t *result) {
+// Detect and parse timestamp in a line with fractional seconds
+static ts_error_t parse_timestamp_in_line_with_fractional(const char *line, time_t *result, long *fractional_seconds) {
     if (!line || !result) {
         return TS_ERROR_INVALID_ARGUMENT;
     }
@@ -303,10 +479,35 @@ static ts_error_t parse_timestamp_in_line(const char *line, time_t *result) {
             // Handle Unix timestamp patterns specially
             if (strcmp(timestamp_formats[i].name, "unix_fractional") == 0) {
                 parse_result = parse_unix_timestamp_fractional(timestamp_str, result);
+                if (fractional_seconds) {
+                    // Extract fractional part from unix timestamp
+                    char *dot_pos = strchr(timestamp_str, '.');
+                    if (dot_pos) {
+                        char *endptr;
+                        *fractional_seconds = strtol(dot_pos + 1, &endptr, 10);
+                        // Convert to microseconds (pad to 6 digits)
+                        while (*fractional_seconds < 1000000 && *fractional_seconds > 0) {
+                            *fractional_seconds *= 10;
+                        }
+                    } else {
+                        *fractional_seconds = 0;
+                    }
+                }
             } else if (strcmp(timestamp_formats[i].name, "unix_plain") == 0) {
                 parse_result = parse_unix_timestamp_plain(timestamp_str, result);
+                if (fractional_seconds) {
+                    *fractional_seconds = 0;
+                }
             } else if (timestamp_formats[i].format != NULL) {
-                parse_result = parse_timestamp_strptime(timestamp_str, timestamp_formats[i].format, result);
+                // Check if this format has fractional seconds
+                if (strstr(timestamp_formats[i].format, "%f") != NULL) {
+                    parse_result = parse_timestamp_strptime_with_fractional(timestamp_str, timestamp_formats[i].format, result, fractional_seconds);
+                } else {
+                    parse_result = parse_timestamp_strptime(timestamp_str, timestamp_formats[i].format, result);
+                    if (fractional_seconds) {
+                        *fractional_seconds = 0;
+                    }
+                }
             }
 
             regfree(&regex);
@@ -321,6 +522,7 @@ static ts_error_t parse_timestamp_in_line(const char *line, time_t *result) {
 
     return TS_ERROR_TIME_PARSE; // No valid timestamp found
 }
+
 
 // Find the leftmost timestamp match in a line
 static ts_error_t find_timestamp_match(const char *line, int *start_pos, int *end_pos) {
@@ -404,8 +606,8 @@ static ts_error_t replace_timestamp_in_line(char *output, size_t output_size,
     return TS_SUCCESS;
 }
 
-// Format time difference as "X ago" or "in X"
-static ts_error_t format_relative_time(char *buffer, size_t buffer_size, time_t timestamp) {
+// Format time difference as "X ago" or "in X" with optional fractional seconds
+static ts_error_t format_relative_time(char *buffer, size_t buffer_size, time_t timestamp, long fractional_seconds) {
     if (!buffer) {
         return TS_ERROR_INVALID_ARGUMENT;
     }
@@ -417,16 +619,39 @@ static ts_error_t format_relative_time(char *buffer, size_t buffer_size, time_t 
 
     time_t diff = now - timestamp;
 
+    // If we have fractional seconds, we need to be more precise
+    bool has_fractional = (fractional_seconds > 0);
+    double precise_diff = (double)diff;
+
+    if (has_fractional) {
+        // Get current time with fractional seconds
+        struct timespec ts;
+        if (clock_gettime(CLOCK_REALTIME, &ts) == 0) {
+            double current_fractional = (double)ts.tv_nsec / 1000000000.0;
+            double timestamp_fractional = (double)fractional_seconds / 1000000.0;
+            precise_diff = (double)diff + current_fractional - timestamp_fractional;
+        }
+    }
+
     if (diff < 0) {
         // Future time
         diff = -diff;
         if (diff < SECONDS_PER_MINUTE) {
-            return safe_snprintf(buffer, buffer_size, "in %lds", diff);
+            if (has_fractional) {
+                return safe_snprintf(buffer, buffer_size, "in %.3fs", -precise_diff);
+            } else {
+                return safe_snprintf(buffer, buffer_size, "in %lds", diff);
+            }
         } else if (diff < SECONDS_PER_HOUR) {
             long minutes = diff / SECONDS_PER_MINUTE;
             long seconds = diff % SECONDS_PER_MINUTE;
             if (seconds > 0) {
-                return safe_snprintf(buffer, buffer_size, "in %ldm%lds", minutes, seconds);
+                if (has_fractional) {
+                    double remaining_seconds = -precise_diff - (minutes * SECONDS_PER_MINUTE);
+                    return safe_snprintf(buffer, buffer_size, "in %ldm%.3fs", minutes, remaining_seconds);
+                } else {
+                    return safe_snprintf(buffer, buffer_size, "in %ldm%lds", minutes, seconds);
+                }
             } else {
                 return safe_snprintf(buffer, buffer_size, "in %ldm", minutes);
             }
@@ -450,12 +675,21 @@ static ts_error_t format_relative_time(char *buffer, size_t buffer_size, time_t 
     } else {
         // Past time
         if (diff < SECONDS_PER_MINUTE) {
-            return safe_snprintf(buffer, buffer_size, "%lds ago", diff);
+            if (has_fractional) {
+                return safe_snprintf(buffer, buffer_size, "%.3fs ago", precise_diff);
+            } else {
+                return safe_snprintf(buffer, buffer_size, "%lds ago", diff);
+            }
         } else if (diff < SECONDS_PER_HOUR) {
             long minutes = diff / SECONDS_PER_MINUTE;
             long seconds = diff % SECONDS_PER_MINUTE;
             if (seconds > 0) {
-                return safe_snprintf(buffer, buffer_size, "%ldm%lds ago", minutes, seconds);
+                if (has_fractional) {
+                    double remaining_seconds = precise_diff - (minutes * SECONDS_PER_MINUTE);
+                    return safe_snprintf(buffer, buffer_size, "%ldm%.3fs ago", minutes, remaining_seconds);
+                } else {
+                    return safe_snprintf(buffer, buffer_size, "%ldm%lds ago", minutes, seconds);
+                }
             } else {
                 return safe_snprintf(buffer, buffer_size, "%ldm ago", minutes);
             }
@@ -684,9 +918,10 @@ int main(int argc, char *argv[]) {
         high_res_time_t current_time = get_high_res_time(monotonic_mode);
 
         if (relative_mode) {
-            // Parse existing timestamp in the line
+            // Parse existing timestamp in the line with fractional seconds
             time_t parsed_time;
-            ts_error_t parse_result = parse_timestamp_in_line(line, &parsed_time);
+            long fractional_seconds = 0;
+            ts_error_t parse_result = parse_timestamp_in_line_with_fractional(line, &parsed_time, &fractional_seconds);
 
             if (parse_result == TS_SUCCESS) {
                 // Found a timestamp
@@ -718,7 +953,7 @@ int main(int argc, char *argv[]) {
                     char replaced_line[MAX_LINE_LENGTH];
                     ts_error_t format_result = format_relative_time(relative_time,
                                                                   sizeof(relative_time),
-                                                                  parsed_time);
+                                                                  parsed_time, fractional_seconds);
                     if (format_result == TS_SUCCESS) {
                         ts_error_t replace_result = replace_timestamp_in_line(replaced_line,
                                                                             sizeof(replaced_line),

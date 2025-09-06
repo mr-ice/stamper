@@ -13,11 +13,12 @@ reformats timestamps in the input.
 - Add timestamps to each line of input
 - Support for custom timestamp formats using strftime format strings
 - **Subsecond resolution** with special format extensions (%.S, %.s, %.T, %N)
-- **Relative timestamp conversion** (-r) with support for multiple timestamp formats
+- Relative timestamp conversion (-r) with support for multiple timestamp formats
+- **Timezone handling** with special format extensions (%z)
 - **Unix timestamp parsing** in relative mode (both plain and fractional)
 - Incremental timestamp modes (-i, -s)
 - **Unique line filtering** (-u)
-- **Monotonic clock support** (-m)
+- Monotonic clock support (-m)
 - **Comprehensive error handling** and bounds checking
 - **Production-grade C11 code** with modern safety features
 - Compatible with the original `ts` command interface

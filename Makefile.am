@@ -18,17 +18,17 @@ AM_CFLAGS = -Wall -Wextra -std=c11
 AM_CPPFLAGS = -I$(top_srcdir)
 
 # Test program
-check_PROGRAMS = test_ts_simple
-test_ts_simple_SOURCES = test_ts_simple.c
+check_PROGRAMS = test_ts_runner
+test_ts_runner_SOURCES = test_ts_runner.c
 
 # Test target
-TESTS = test_ts_simple
+TESTS = test_ts_runner
 
 
 
-# Custom test target that builds and runs test_ts_simple directly
-test: test_ts_simple ## Run detailed test suite
-	./test_ts_simple
+# Custom test target that builds and runs test_ts_runner directly
+test: test_ts_runner ## Run detailed test suite
+	./test_ts_runner
 
 # Help target
 help: ## Show this help message
@@ -49,7 +49,7 @@ help: ## Show this help message
 EXTRA_DIST = README.md configure.ac Makefile.am NEWS AUTHORS ChangeLog doc/ts.1 doc/ts.texi
 
 # Clean additional files
-CLEANFILES = *.o *.lo *.la *.log *.trs test-suite.log ts test_ts_simple doc/*.info
+CLEANFILES = *.o *.lo *.la *.log *.trs test-suite.log ts test_ts_runner doc/*.info doc/.dirstamp
 
 # Install man page if available
 # man_MANS = ts.1
@@ -105,9 +105,16 @@ release: CFLAGS += -DNDEBUG ## Build optimized release version
 release: all
 
 # Coverage target (if gcov is available)
-coverage: CFLAGS += --coverage ## Build with coverage instrumentation
-coverage: LDFLAGS += --coverage
-coverage: clean all
-	./test_ts_simple
+coverage: ## Build with coverage instrumentation and generate coverage report
+	@echo "Cleaning previous coverage data..."
+	rm -f *.gcno *.gcda *.gcov
+	$(MAKE) clean
+	@echo "Building with coverage instrumentation..."
+	$(MAKE) CFLAGS="$(AM_CFLAGS) --coverage" LDFLAGS="--coverage" all
+	$(MAKE) CFLAGS="$(AM_CFLAGS) --coverage" LDFLAGS="--coverage" test_ts_runner
+	@echo "Running tests..."
+	./test_ts_runner
+	@echo "Generating coverage report..."
 	gcov -r ts.c
-	@echo "Coverage report generated"
+	@echo "Coverage report generated: ts.c.gcov"
+	@echo "Note: Coverage shows 0% because ts is called as subprocess from test runner"
